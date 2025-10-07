@@ -30,3 +30,23 @@ __pycache__/
 **/airflow_home/
 **/postgres-data/
 **/redis-data/
+
+# Airflow and Docker ignores
+logs/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.env.*
+*.db
+*.sqlite
+airflow.cfg
+dags/__pycache__/
+config/__pycache__/
+plugins/__pycache__/
+tmp/
+*.log
+*.pid
+*.swp
+.dockerignore
