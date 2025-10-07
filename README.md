@@ -1,340 +1,88 @@
-\# 🚆 MBTA Airflow–Snowflake Data Pipeline
+# MBTA Airflow – Snowflake Data Pipeline
 
-
-
-\### \*Automating Real-Time MBTA Transit Data with Airflow, Docker \& Snowflake\*
-
-
-
-!\[Airflow + Snowflake](https://github.com/github/explore/raw/main/topics/airflow/airflow.png)
-
-
+## Overview
+This project builds an **end-to-end data pipeline** using **Apache Airflow**, **Docker**, and **Snowflake** to automate the extraction and loading of live public transit data from the **MBTA (Massachusetts Bay Transportation Authority) API**.  
+The pipeline fetches real-time predictions for the Green-B line and loads them into Snowflake for downstream analytics, dashboarding, or alerting.
 
 ---
 
+## Project Architecture
+**Data Flow:**
+### MBTA API → Airflow DAG → Extract Task → Transform (CSV) → Load Task → Snowflake Table
 
-
-\## 📖 Project Overview
-
-
-
-This project demonstrates an \*\*end-to-end automated data pipeline\*\* that fetches \*\*real-time MBTA (Massachusetts Bay Transportation Authority)\*\* predictions using the official API and loads them into a \*\*Snowflake data warehouse\*\* every 10 minutes using \*\*Apache Airflow\*\* orchestrated inside Docker.
-
-
-
-It’s designed as a \*\*resume-ready data engineering project\*\* — showcasing ETL automation, API ingestion, cloud data warehousing, and containerized orchestration.
-
-
+**Tools Used:**
+- **Apache Airflow** – Workflow orchestration and scheduling  
+- **Docker Compose** – Containerized Airflow setup  
+- **Snowflake** – Cloud data warehouse for scalable analytics  
+- **Python** – Data extraction, cleaning, and integration logic  
+- **Pandas** – Data transformation and CSV handling  
+- **Requests** – REST API communication with MBTA
 
 ---
 
+## DAG Details
+**DAG ID:** `mbta_to_snowflake_dag`  
+**Schedule Interval:** Every 10 minutes (`*/10 * * * *`)  
+**Owner:** `rithika`  
+**Description:** Fetch MBTA live data every 10 minutes and load it into Snowflake.
 
+**Tasks:**
+1. **fetch_mbta_data**  
+   - Calls MBTA’s real-time predictions API  
+   - Extracts route, direction, stop sequence, arrival/departure times, and status  
+   - Saves results to `/tmp/mbta_data.csv`
 
-\## 🧩 Tech Stack
-
-
-
-| Category        | Tools \& Technologies              |
-
-| --------------- | --------------------------------- |
-
-| Orchestration   | 🪶 Apache Airflow (Dockerized)    |
-
-| Cloud Warehouse | ❄️ Snowflake                      |
-
-| Programming     | 🐍 Python 3 (Pandas, Requests)    |
-
-| Infrastructure  | 🐳 Docker Desktop                 |
-
-| Scheduling      | ⏰ Cron (Airflow DAG every 10 min) |
-
-| Data Source     | 🚇 MBTA Live Predictions API      |
-
-
+2. **load_to_snowflake**  
+   - Connects to Snowflake using the Snowflake Python Connector  
+   - Loads data from `/tmp/mbta_data.csv` into the target table  
+   - Commits the transaction and closes the connection
 
 ---
 
+## Project Setup:
 
+### 1. Prerequisites
+- Docker and Docker Compose installed  
+- Snowflake account (with database, schema, and warehouse)  
+- MBTA API (no authentication required)
 
-\## ⚙️ Architecture
+### 2. Clone the Repository
 
+### 3. Configure Environment
+-Update credentials directly in the DAG (or via environment variables).
 
+### 4. Start Airflow with Docker
 
-```mermaid
+### 5. Trigger the DAG
+- Enable and trigger the mbta_to_snowflake_dag in the Airflow UI.
+- You’ll see two tasks: fetch_mbta_data → load_to_snowflake.
+  <img width="2829" height="1509" alt="image" src="https://github.com/user-attachments/assets/c2855b20-1ccd-461e-bcb3-7cf5466808cd" />
 
-flowchart LR
 
-&nbsp;   A\[🚇 MBTA API] --> B\[🐍 Python Extraction]
+## Snowflake Table Schema
 
-&nbsp;   B --> C\[🧹 Transform (Clean \& Handle NaN)]
+**Table: MBTA_LIVE_PREDICTIONS**
 
-&nbsp;   C --> D\[❄️ Load into Snowflake]
+| Column Name    | Data Type | Description                              |
+| -------------- | --------- | ---------------------------------------- |
+| ROUTE          | STRING    | MBTA line name (e.g., Green-B)           |
+| DIRECTION      | INT       | Direction ID (0 = outbound, 1 = inbound) |
+| STATUS         | STRING    | Train status                             |
+| ARRIVAL_TIME   | TIMESTAMP | Expected arrival time                    |
+| DEPARTURE_TIME | TIMESTAMP | Expected departure time                  |
+| STOP_SEQ       | INT       | Stop sequence number                     |
 
-&nbsp;   D --> E\[📊 Query / Dashboard in Snowflake]
+<img width="2865" height="1492" alt="image" src="https://github.com/user-attachments/assets/e8af8026-4cf0-40cd-9daf-cfc48bf1de87" />
 
-&nbsp;   F\[⏰ Airflow Scheduler] --> B
 
-```
+### Key Learnings
 
+* Built a containerized ETL pipeline using Docker and Airflow
 
+* Automated real-time ingestion from a public REST API
 
----
+* Integrated Airflow with Snowflake via Python connector
 
+* Implemented retry logic and task dependencies
 
-
-\## 📂 Repository Structure
-
-
-
-```
-
-MBTA\_Airflow\_Project/
-
-│
-
-├── dags/
-
-│   └── mbta\_to\_snowflake\_dag.py      # Main Airflow DAG
-
-│
-
-├── docker-compose.yaml               # Airflow Docker environment
-
-├── .gitignore                        # Ignore cache/logs/credentials
-
-└── README.md                         # Project documentation
-
-```
-
-
-
----
-
-
-
-\## 🚀 How It Works
-
-
-
-1\. \*\*Fetch MBTA Data\*\*
-
-
-
-&nbsp;  \* The DAG calls the MBTA API endpoint `/predictions`
-
-&nbsp;  \* Extracts route, direction, status, arrival/departure times
-
-&nbsp;  \* Saves results locally → `/tmp/mbta\_data.csv`
-
-
-
-2\. \*\*Load into Snowflake\*\*
-
-
-
-&nbsp;  \* Reads the CSV into Pandas
-
-&nbsp;  \* Creates table `MBTA\_LIVE\_PREDICTIONS` (if not exists)
-
-&nbsp;  \* Inserts records via Snowflake Connector
-
-&nbsp;  \* Handles `NaN` → `NULL` conversion safely
-
-
-
-3\. \*\*Schedule via Airflow\*\*
-
-
-
-&nbsp;  \* DAG runs every 10 minutes (`\*/10 \* \* \* \*`)
-
-&nbsp;  \* Tasks:
-
-
-
-&nbsp;    \* 🟩 `fetch\_mbta\_data` → 🟩 `load\_to\_snowflake`
-
-
-
-4\. \*\*Monitor in Airflow UI\*\*
-
-
-
-&nbsp;  \* Web UI → \[http://localhost:8080](http://localhost:8080)
-
-&nbsp;  \* View DAG status (✅ success / ❌ failure / retry)
-
-
-
----
-
-
-
-\## 🧠 Snowflake Table Schema
-
-
-
-| Column         | Type      | Description              |
-
-| -------------- | --------- | ------------------------ |
-
-| ROUTE          | STRING    | MBTA line (e.g. Green-B) |
-
-| DIRECTION      | INT       | Direction ID             |
-
-| STATUS         | STRING    | Train status             |
-
-| ARRIVAL\_TIME   | STRING    | Arrival timestamp        |
-
-| DEPARTURE\_TIME | STRING    | Departure timestamp      |
-
-| STOP\_SEQ       | INT       | Stop sequence            |
-
-| LOAD\_TIMESTAMP | TIMESTAMP | Time of pipeline load    |
-
-
-
----
-
-
-
-\## 🛠️ Setup \& Run
-
-
-
-\### 1️⃣ Clone the Repository
-
-
-
-```bash
-
-git clone https://github.com/<your-username>/MBTA\_Airflow\_Project.git
-
-cd MBTA\_Airflow\_Project
-
-```
-
-
-
-\### 2️⃣ Start Airflow with Docker
-
-
-
-```bash
-
-docker compose up -d
-
-```
-
-
-
-Wait until containers (`webserver`, `scheduler`, `worker`, `postgres`, `redis`) are running.
-
-
-
-\### 3️⃣ Open Airflow UI
-
-
-
-\[http://localhost:8080](http://localhost:8080)
-
-Enable the DAG → `mbta\_to\_snowflake\_dag`
-
-
-
-\### 4️⃣ Verify in Snowflake
-
-
-
-```sql
-
-SELECT \* 
-
-FROM SNOWFLAKE\_LEARNING\_DB.PUBLIC.MBTA\_LIVE\_PREDICTIONS
-
-ORDER BY LOAD\_TIMESTAMP DESC
-
-LIMIT 20;
-
-```
-
-
-
----
-
-
-
-\## 🧾 Example Run Output
-
-
-
-\*\*Airflow Logs\*\*
-
-
-
-```
-
-✅ 10 MBTA records fetched and saved to /tmp/mbta\_data.csv  
-
-✅ Data inserted into Snowflake successfully!  
-
-```
-
-
-
-\*\*Snowflake Query Result\*\*
-
-
-
-| ROUTE   | STATUS   | LOAD\_TIMESTAMP          |
-
-| ------- | -------- | ----------------------- |
-
-| Green-B | Arriving | 2025-10-07 18:00:00 UTC |
-
-| Green-B | Departed | 2025-10-07 17:50:00 UTC |
-
-
-
----
-
-
-
-\## 🔒 Security \& Best Practices
-
-
-
-\* ✅ Store credentials securely in Airflow Connections (not in code)
-
-\* ✅ Use `.gitignore` to exclude logs, .env files, and CSVs
-
-\* ✅ Parameterize account details for portability
-
-
-
-
-
----
-
-
-
-\## 🌟 Key Highlights
-
-
-
-\* 🧠 Real-time data integration pipeline
-
-\* ⚙️ Automated Airflow scheduling inside Docker
-
-\* ❄️ Snowflake data warehouse integration
-
-\* 🧹 Robust error handling \& NaN management
-
-\* 🧾 Production-style architecture for portfolio
-
-
-
-
-
-
-
+* Developed practical skills in workflow orchestration and data warehousing
