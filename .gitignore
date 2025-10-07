@@ -1,0 +1,32 @@
+# Ignore system files
+.DS_Store
+Thumbs.db
+
+# Ignore Python cache
+__pycache__/
+*.pyc
+
+# Ignore Airflow folders
+logs/
+plugins/
+config/
+__pycache__/
+
+# Ignore credentials and temp files
+.env
+*.csv
+*.json
+*.db
+*.sqlite
+*.log
+*.zip
+*.tmp
+
+# Ignore OS / IDE stuff
+.vscode/
+.idea/
+
+# Ignore Docker volumes and cache
+**/airflow_home/
+**/postgres-data/
+**/redis-data/
