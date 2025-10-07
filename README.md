@@ -4,6 +4,12 @@
 This project builds an **end-to-end data pipeline** using **Apache Airflow**, **Docker**, and **Snowflake** to automate the extraction and loading of live public transit data from the **MBTA (Massachusetts Bay Transportation Authority) API**.  
 The pipeline fetches real-time predictions for the Green-B line and loads them into Snowflake for downstream analytics, dashboarding, or alerting.
 
+
+<p align="center">
+  <img src="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExaHdzZ2Q1eW82a3NyYmliMDh5NG1yc2U3OGVpM2l6cnNxbWdvbmRtZiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/BhcHf3qYMg8Zq/giphy.gif" alt="MBTA Green Line" width="600"/>
+</p>
+
+
 ---
 
 ## Project Architecture
