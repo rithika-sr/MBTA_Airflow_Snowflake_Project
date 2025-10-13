@@ -137,9 +137,9 @@ def validate_data():
 def load_to_snowflake():
     try:
         conn = snowflake.connector.connect(
-            user="RITHIKA0311",
-            password="Charliembta@12345",
-            account="vrc94697.us-east-1",
+            user="****",
+            password="****",
+            account="*****",
             warehouse="COMPUTE_WH",
             database="SNOWFLAKE_LEARNING_DB",
             schema="PUBLIC"
